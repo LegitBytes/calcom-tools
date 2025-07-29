@@ -63,6 +63,40 @@ def fetch_booking_by_email(email,api_key,api_version):
         print(f"Error fetching bookings: {e}")
         return []
 
+# Cancl a Booking of user with the ID
+def cancel_booking(api_key, bookingUid, api_version):
+    """
+    Cancel a booking by its UID.
+    
+    Args:
+        api_key (str): Cal.com API Key (Bearer Token)
+        bookingUid (str): Booking UID
+        api_version (str): Cal.com API version
+
+    Returns:
+        dict: API response from the cancellation request
+    """
+    url = f"https://api.cal.com/v2/bookings/{bookingUid}/cancel"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "cal-api-version": api_version,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "cancellationReason": "User requested cancellation",
+        "cancelSubsequentBookings": True
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as http_err:
+        return {"error": f"HTTP error occurred: {http_err}", "response": response.text}
+    except Exception as err:
+        return {"error": f"Other error occurred: {err}"}
+    
+
 def reschedule_booking_by_email_and_phone(email,phone_number,new_start_time,rescheduled_by,rescheduled_reason,api_key,api_version):
     """
     Find booking by email and phoneNumber, then reschedule it.
@@ -137,6 +171,7 @@ def get_slot_availability(api_key,start_date,end_date,user,api_version):
         print(f"Error fetching availability: {e}")
         return None
 
+# Get Meeting Details
 def get_meeting(api_key, calendar, event_uid):
     """
     Fetch a meeting (event) from Cal.com by calendar and event UID.
@@ -164,6 +199,7 @@ def get_meeting(api_key, calendar, event_uid):
         print(f"Request Failed: {e}")
     
     return None
+
 
 if __name__ == "__main__":
     API_KEY = "cal_live_4499276c6e342f41e0d00e5314fdef4e"
