@@ -108,19 +108,68 @@ def create_cal_booking(
             print("Response:", e.response.text)
         return {"error": str(e)}
 
-# if __name__ == "__main__":
-#     API_KEY = "cal_live_4499276c6e342f41e0d00e5314fdef4e"
-#     CALENDAR_USERNAME = "aamajeed.legitbytes@gmail.com"  # Replace with your calendar username
-#     EVENT_UID = "evt_123456789"         # Replace with a real event UID
+# To create a Booking
+if __name__ == "__main__":
+    response = create_cal_booking(
+        api_key="cal_live_4499276c6e342f41e0d00e5314fdef4e",
+        start="2025-08-01T08:00:00Z",
+        attendee={
+            "name": "Anas Quershi",
+            "email": "moanas@legitbytes.com",
+            "timeZone": "Asia/Kolkata",
+            "phoneNumber": "+919876543210",
+            "language": "en",
+            "name": "Aamir Majeed",
+            "email": "aamajeed@legitbytes.com",
+            "phoneNumber": "+918082580873",
+            "timeZone": "Asia/Kolkata",
+            "language": "en",
+        },
+        event_type_id=2910092,
+        event_type_slug="project",
+        guests=["moanaq@legitbytes.com"],
+        booking_fields={"customField": "customValue"},
+        metadata={"key": "value"},
+        routing={"responseId": 123, "teamMemberIds": [101, 102]}
+    )
 
-#     event = get_meeting(API_KEY, CALENDAR_USERNAME, EVENT_UID)
-
-#     if event:
-#         print("Meeting Details:")
-#         print(event)
-#     else:
-#         print("Failed to fetch the meeting.")
+#     print(response)
 # ***********************************
+
+def reschedule_cal_booking(api_key: str,bookingUid: str,api_version:str = "2024-08-13") -> Dict:
+    """
+    Reschedule a Cal.com booking.
+
+    Args:
+        api_key (str): Cal.com API key.
+        bookingUid (str): UID of the booking to reschedule.
+        api_version (str): Cal.com API version.
+
+    Returns:
+        dict: JSON response from Cal.com API.
+    """
+    url = f"https://api.cal.com/v2/bookings/{bookingUid}/reschedule"
+    headers = {
+        "cal-api-version": api_version,
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    try:
+        response = requests.post(url, headers=headers)
+        response.raise_for_status()
+        print("✅ Booking rescheduled.")
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print("❌ Booking reschedule failed:", e)
+        return {"error": str(e)}
+
+# Test the Reshedule a booking
+# if __name__ == "__main__":
+#     api_key = get_decrypted_key_from_dynamodb('ApiKeys',{'user_id': {'S': '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'}})
+#     bookingUid = "w8yRvDzeWUwyFNrGesqgyq"
+#     api_version = "2024-08-13"
+#     response = reschedule_cal_booking(api_key,bookingUid,api_version)
+#     print("response--->",response)
 
 def get_cal_bookings(api_key: str,attendee_email,take:int =100,api_version:str = "2024-08-13") -> Dict:
     """
@@ -159,6 +208,45 @@ def get_cal_bookings(api_key: str,attendee_email,take:int =100,api_version:str =
 #     response = get_cal_bookings(api_key="cal_live_4499276c6e342f41e0d00e5314fdef4e",attendee_email="moanasq@legitbytes.com",take="10",api_version="2024-08-13")
 #     print("Respnse from get_cal_bookings---",response)
 # **********************
+
+# Get a Booking
+def get_cal_booking_by_id(api_key: str, booking_id: str, api_version: str = "2024-08-13") -> Dict:
+    """
+    Fetch a specific Cal.com booking by its ID.
+
+    Args:
+        api_key (str): Cal.com API key.
+        booking_id (str): ID of the booking to fetch.
+        api_version (str): Cal.com API version.
+
+    Returns:
+        dict: JSON response from Cal.com API.
+    """
+    url = f"https://api.cal.com/v2/bookings/{booking_id}"
+    headers = {
+        "cal-api-version": api_version,
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        print("✅ Booking fetched successfully.")
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print("❌ Error fetching booking:", e)
+        if e.response is not None:
+            print("Response:", e.response.text)
+        return {"error": str(e)}
+
+# ***********
+
+# if __name__ == "__main__":
+#     bookingUid = "ju8zQ8YeKovLYZxBc9z4Er"
+#     response = get_cal_booking_by_id(api_key="cal_live_4499276c6e342f41e0d00e5314fdef4e",booking_id=bookingUid,api_version="2024-18-13")
+#     print("response=========",response)
+# ***********
+
 
 # Get All Calenders
 def get_calenders(api_key: str) -> Dict:
@@ -288,7 +376,14 @@ def cancel_booking(api_key, bookingUid, api_version):
         return {"error": f"HTTP error occurred: {http_err}", "response": response.text}
     except Exception as err:
         return {"error": f"Other error occurred: {err}"}
-    
+
+# Test the Cancel Booking tool
+# if __name__ == "__main__":
+#     api_key = get_decrypted_key_from_dynamodb('ApiKeys', {'user_id': {'S': '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'}})
+#     print('api-key--->',api_key)
+#     bookingUid = "w8yRvDzeWUwyFNrGesqgyq"
+#     response = cancel_booking(api_key, bookingUid, "2024-08-13")
+#     print("response=========", response)
 
 def reschedule_booking_by_email_and_phone(email,phone_number,new_start_time,rescheduled_by,rescheduled_reason,api_key,api_version):
     """
@@ -330,28 +425,29 @@ def reschedule_booking_by_email_and_phone(email,phone_number,new_start_time,resc
             print(response.content)
         return None
 # ***************
-if __name__ == "__main__":
-    table_name = 'ApiKeys'
-    user_id_value = '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'
-    api_key = get_decrypted_key_from_dynamodb(table_name, {'user_id': {'S': user_id_value}})
+# if __name__ == "__main__":
+#     table_name = 'ApiKeys'
+#     user_id_value = '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'
+#     api_key = get_decrypted_key_from_dynamodb(table_name, {'user_id': {'S': user_id_value}})
+#     print("apiKey--->",api_key)
     # Step 1: Verify schema
     # key_schema = describe_table_schema(table_name)
     # if not key_schema:
     #     print("Cannot proceed without correct schema.")
     # else:
     # Step 2: Fetch API key
-    api_key = get_api_key_by_user_id(user_id_value, table_name)
-    if api_key:
-        print(f"API Key for userId {user_id_value}: {api_key}")
-            # Step 3: Fetch bookings
-        bookings = fetch_booking_by_email("aamajeed@legitbytes.com", api_key, "2024-08-13")
-        print(f"Found {len(bookings)} bookings for email aamajeed@legitbytes.com")
-            # Step 4: Reschedule booking
-        reschedule_response = reschedule_booking_by_email_and_phone(
-                "aamajeed.legitbytes@gmail.com", "+8360991407", "2023-12-25T10:00:00Z", "Aamir Majeed", "Rescheduled due to maintenance", api_key, "2024-08-13")
-        print("Reschedule response:", reschedule_response)
-    else:
-        print(f"No API Key found for userId {user_id_value}")
+    # api_key = get_api_key_by_user_id(user_id_value, table_name)
+    # if api_key:
+    #     print(f"API Key for userId {user_id_value}: {api_key}")
+    #         # Step 3: Fetch bookings
+    #     bookings = fetch_booking_by_email("aamajeed@legitbytes.com", api_key, "2024-08-13")
+    #     print(f"Found {len(bookings)} bookings for email aamajeed@legitbytes.com")
+    #         # Step 4: Reschedule booking
+    #     reschedule_response = reschedule_booking_by_email_and_phone(
+    #             "aamajeed@legitbytes.com", "+8360991407", "2023-12-25T10:00:00Z", "Aamir Majeed", "Rescheduled due to maintenance", api_key, "2024-08-13")
+    #     print("Reschedule response:", reschedule_response)
+    # else:
+    #     print(f"No API Key found for userId {user_id_value}")
 # ***************
 
 # Facing Issue in this API
@@ -456,25 +552,3 @@ def get_meeting(api_key, calendar, event_uid):
 #             print("Reschedule response:", reschedule_response)
 #         else:
 #             print(f"No API Key found for userId {user_id_value}")
-
-# To create a Booking
-# if __name__ == "__main__":
-#     response = create_cal_booking(
-#         api_key="cal_live_4499276c6e342f41e0d00e5314fdef4e",
-#         start="2025-08-14T09:00:00Z",
-#         attendee={
-#             "name": "Anas Quershi",
-#             "email": "moanasq@legitbytes.com",
-#             "timeZone": "America/New_York",
-#             "phoneNumber": "+919876543210",
-#             "language": "en"
-#         },
-#         event_type_id=2910092,
-#         event_type_slug="30min",
-#         guests=["chetan@gmail.com", "jay@gmail.com"],
-#         booking_fields={"customField": "customValue"},
-#         metadata={"key": "value"},
-#         routing={"responseId": 123, "teamMemberIds": [101, 102]}
-#     )
-
-#     print(response)
