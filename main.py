@@ -112,22 +112,17 @@ def create_cal_booking(
 if __name__ == "__main__":
     response = create_cal_booking(
         api_key="cal_live_4499276c6e342f41e0d00e5314fdef4e",
-        start="2025-08-01T08:00:00Z",
+        start="2025-08-02T10:00:00Z",
         attendee={
-            "name": "Anas Quershi",
-            "email": "moanas@legitbytes.com",
-            "timeZone": "Asia/Kolkata",
-            "phoneNumber": "+919876543210",
-            "language": "en",
             "name": "Aamir Majeed",
             "email": "aamajeed@legitbytes.com",
             "phoneNumber": "+918082580873",
             "timeZone": "Asia/Kolkata",
             "language": "en",
         },
-        event_type_id=2910092,
-        event_type_slug="project",
-        guests=["moanaq@legitbytes.com"],
+        event_type_id=2910093,
+        event_type_slug="secret",
+        guests=["aamajeed@legitbytes.com"],
         booking_fields={"customField": "customValue"},
         metadata={"key": "value"},
         routing={"responseId": 123, "teamMemberIds": [101, 102]}
@@ -136,13 +131,14 @@ if __name__ == "__main__":
 #     print(response)
 # ***********************************
 
-def reschedule_cal_booking(api_key: str,bookingUid: str,api_version:str = "2024-08-13") -> Dict:
+def reschedule_cal_booking(api_key: str,bookingUid: str,start: str,api_version:str = "2024-08-13") -> Dict:
     """
     Reschedule a Cal.com booking.
 
     Args:
         api_key (str): Cal.com API key.
         bookingUid (str): UID of the booking to reschedule.
+        start (str): Start Date for the meeting.
         api_version (str): Cal.com API version.
 
     Returns:
@@ -151,24 +147,29 @@ def reschedule_cal_booking(api_key: str,bookingUid: str,api_version:str = "2024-
     url = f"https://api.cal.com/v2/bookings/{bookingUid}/reschedule"
     headers = {
         "cal-api-version": api_version,
+        "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
-
+    payload = {
+        "start": start
+    }
+    print("payload--->", payload)
     try:
-        response = requests.post(url, headers=headers)
+        response = requests.post(url, headers=headers,json=payload)
         response.raise_for_status()
         print("✅ Booking rescheduled.")
         return response.json()
     except requests.exceptions.RequestException as e:
         print("❌ Booking reschedule failed:", e)
         return {"error": str(e)}
-
+# This is working but not in vscode 
 # Test the Reshedule a booking
 # if __name__ == "__main__":
 #     api_key = get_decrypted_key_from_dynamodb('ApiKeys',{'user_id': {'S': '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'}})
-#     bookingUid = "w8yRvDzeWUwyFNrGesqgyq"
+#     bookingUid = "b4MCvArKqbJy4WDxGmyQnh"
+#     start = "2025-08-01T08:00:00Z"
 #     api_version = "2024-08-13"
-#     response = reschedule_cal_booking(api_key,bookingUid,api_version)
+#     response = reschedule_cal_booking(api_key,bookingUid,start,api_version)
 #     print("response--->",response)
 
 def get_cal_bookings(api_key: str,attendee_email,take:int =100,api_version:str = "2024-08-13") -> Dict:
@@ -363,13 +364,9 @@ def cancel_booking(api_key, bookingUid, api_version):
         "cal-api-version": api_version,
         "Content-Type": "application/json"
     }
-    payload = {
-        "cancellationReason": "User requested cancellation",
-        "cancelSubsequentBookings": True
-    }
 
     try:
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as http_err:
@@ -381,7 +378,7 @@ def cancel_booking(api_key, bookingUid, api_version):
 # if __name__ == "__main__":
 #     api_key = get_decrypted_key_from_dynamodb('ApiKeys', {'user_id': {'S': '339cc9f2-9d39-43b4-9e80-d1b5f79aed04'}})
 #     print('api-key--->',api_key)
-#     bookingUid = "w8yRvDzeWUwyFNrGesqgyq"
+#     bookingUid = "b4MCvArKqbJy4WDxGmyQnh"
 #     response = cancel_booking(api_key, bookingUid, "2024-08-13")
 #     print("response=========", response)
 
